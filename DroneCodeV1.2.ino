@@ -48,46 +48,6 @@ void loop() {
  }
 
 
-/*
-FUNCTIONS TO-DO LIST
-----------------------------
------------------------------
-
-SENSORS (declare pins and create functions if needed)
-------------
-BUZZER (DONE)
-SERVO  (SEMI-DONE)
-GYRO
-Ultrasonic Sensor (DONE)
-
-ACTIONS
------------
-DroneStart
-GetDistance (DONE)
-PickUpPackage
-Yaw
-Pitch
-Roll
-Throttle
-GetAltitude (DONE)
-CalculateCenter (IN PROGRESS)
-Drone2CenterDist
-AltHold
-AutoLevel
-
-PWM
-----------
-CHAN1
-CHAN2
-CHAN3
-CHAN4
-
-
-*/
-
-
-
-
 //-------The buzzer sensor is used to alert when Package is Located-----------
 void buzzer(Var v) { 
   tone(buzzerPin, 1000); // Send 1KHz sound signal...
