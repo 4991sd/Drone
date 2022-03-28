@@ -1,31 +1,34 @@
 #include <Wire.h>
 #include <LIDARLite.h>
+#include "Detect.h"
 #include <Servo.h>
 
-LIDARLite lidarStuff;
-Servo panServo;
+  Detect d = Detect();
+  LIDARLite lidarStuff;
+  Servo panServo;
 
-  //Hold Variables
   struct Var{
     
   // Create a servo object
   // Declaration of Pins
-  
+   
   #define buzzerPin 8      // buzzer
-  #define servoPin 4      // servo motor
   #define pingPin 17     // Ultrasonic sensor
-  
+  #define servoPin 4      // servo motor
+
   // Variables 
-  double meter = lidarStuff.distance(); 
-  //int angle = 0;
-  float marker1x,marker2x,marker3x,side1,side2,center = 0.0;
-  float marker1y, marker2y, marker3y = 0.0;
-  float x, y = 0;
+    double meter = lidarStuff.distance(); 
+    int angle = 0;
+    float x, y = 0;
+    int distance [4] = {0, 0, 0, 0};
+    int theta [4] = {0, 0, 0, 0};
+    double markerX[4] = {0,0,0,0};
+    double markerY[4] = {0,0,0,0};
+   
   
   };
-
+ 
 void setup() {
-  struct Var v1;
   Serial.begin(9600);           // opens serial port, sets data rate to 9600 bps
   lidarStuff.begin(0, true);    // default I2C freq to 400 kHz
   pinMode(buzzerPin, OUTPUT);   // Set buzzer - pin 8 as an output
@@ -44,12 +47,15 @@ void setup() {
   //MAIN LOOP
 void loop() { 
   struct Var v;
-  servo(v);
+
+  servo();
  }
 
 
+
+
 //-------The buzzer sensor is used to alert when Package is Located-----------
-void buzzer(Var v) { 
+void buzzer() { 
   tone(buzzerPin, 1000); // Send 1KHz sound signal...
   delay(500);            // ...for 1/2 sec
   noTone(buzzerPin);     // Stop sound...
@@ -58,7 +64,7 @@ void buzzer(Var v) {
 
 //-----------------Using Ultrasonic sensor to get the altitude of the drone------------------
 
-int GetAltitude(Var v) { 
+int GetAltitude() { 
     int duration, cm;
     pinMode(pingPin, OUTPUT);
     digitalWrite(pingPin, LOW);
@@ -75,58 +81,40 @@ int GetAltitude(Var v) {
   }
 
  //------Uses the LiDAR Sensor to get horizontal distance of Markers or Objects----------
-
-//trying to be consistent with units remooving CM 
-double GetDistance(Var v) { 
-  if (v.meter >= 100) {
-    v.meter = v.meter;
-    //Serial.println(" meters");
-  }
-  else {
-    v.meter = lidarStuff.distance();
+ int GetDistance() {
+    int meter = 0; 
+    if (meter >= 100) {
+      meter = meter * 0.01;
+     //Serial.println(" meters");
+                      }
+    else {
+    meter = lidarStuff.distance();
     //Serial.println(" cm");
-  }
-  return  v.meter;
+         }
+  return  meter;
 }
+//trying to be consistent with units remooving CM 
+
 //-------SERVO-------------------------
-void servo(Var v) {
-    for (int angle = panServo.read() ; angle < 180; angle += 2) {
+  void servo() {
+    int angle = 0;
+    //angle in degrees 
+    for (angle = panServo.read(); angle < 180; angle += 2) {
+   
         panServo.write(angle); 
         delay(100);
-        CalculateCenter(angle, v);
+        d.CalculateCenter(angle, GetDistance());
     }
  
-    for (int angle = panServo.read(); angle > 0; angle -= 2) {
+    for (angle = panServo.read(); angle > 0; angle -= 2) {
+        
         panServo.write(angle);
         delay(100);
-        CalculateCenter(angle, v);
     }
 }
+
 // -----Calculates the Center
-//  **Assmuning the drone starts at the same spot and has to be close to a marker.**
-void CalculateCenter(int angle, Var v){ 
-  
-   //sin and cos are radians only had to convert 
-     double r = GetDistance(v);
-     double x = r*cos(angle*3.1416/180);
-     double y = r*sin(angle*3.1416/180);
-     
-     //testing ouput
-     //Serial.print( "r = ") + Serial.print(r) + Serial.print(" theta = ") + Serial.println(angle);
-     //Serial.print("x = ") + Serial.print(x) + Serial.print(" y = ") + Serial.println(y);
-     
-     if( x != v.marker1x && y != v.marker1y)
-     {
-      v.marker1x = x;
-      v.maker1y = y;
-      
-     if(v.marker2x != x && v.marker2y != y)
-      {
-        v.marker2x = x;
-        v.marker2y = y;
-      }
-     }
-}
+
 //--------------PICK-UP PACKAGE------------
 void PickUpPackage() {
 
