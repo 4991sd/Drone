@@ -94,7 +94,7 @@ int Launch(int AltMes) {
       }
     }
   }
-  return (OCR1A);
+  return OCR1A;
 }
 
 
@@ -133,5 +133,5 @@ int adj(int Mes, int alpha) {
   int PW_1 = alpha * 15 + 1500;    //Required PW signal to obtain alpha
   int PW_2 = Mes * 15;             //Change in PW required for maintaining alpha
   int pwAdj = PW_1 - PW_2;         //Total PW signal for alpha including changes in direction
-  return (pwAdj);
+  return pwAdj;
 }
