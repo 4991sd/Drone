@@ -61,6 +61,8 @@ struct Var {
 #define buzzerPin 8      // buzzer
 #define pingPin 17     // Ultrasonic sensor
 #define servoPin 4      // servo motor
+#define echoPin 2                 // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 3                 //attach pin D3 Arduino to pin Trig of HC-SR04
 
   // Variables
   double meter = lidarStuff.distance();
@@ -253,23 +255,26 @@ void servo() {
     delay(100);
   }
 }
+// Arduino Ultrasoninc Sensor HC-SR04
 
-// ==========================================
-// ===  Ultrasonic sensor for altitude    ===
-// ===========================================
+// defines variables
+long duration; // variable for the duration of sound wave travel
+int distance; // variable for the distance measurement
 int GetAltitude() {
-  int duration, cm;
-  pinMode(pingPin, OUTPUT);
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, HIGH);
+  // Clears the trigPin condition
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+  digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
-  digitalWrite(pingPin, LOW);
-  pinMode(pingPin, INPUT); //Read from same pin. The duration of the HIGH pulse tells the distance
-  duration = pulseIn(pingPin, HIGH);
-  cm = duration / 58; //convert time into a distance
-  delay(20);
-  return cm;
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  // Displays the distance on the Serial Monitor
+  Serial.println(distance);
+  return distance;
 }
 
 //void CalculateCenter(){
