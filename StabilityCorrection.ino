@@ -71,7 +71,7 @@ int FlightMode() {                  //FlightMode() shall be called in the setup 
   delay(2000);
   OCR4A = 125;
   delay(3000);
-  OCR3A = 94;
+  OCR4A = 94;
 }
 
 /*
@@ -99,9 +99,16 @@ int Launch(int AltMes) {
 
 
 int Elevation(int AltMes, int AltReq) {
-  int OcrNum = adj(AltMes, AltReq) / 16;
-  OCR1A = OcrNum;
+  if (AltMes < AltReq) {
+    OCR1A++;
+    delay(250);
+  }
+  else {
+    OCR1A--;
+    delay(250);
+  }
 }
+
 
 /*
    RollMes = Value of roll measured by the gyroscope
