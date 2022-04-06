@@ -3,6 +3,12 @@
 #define YawPin 5                  //Yaw pin definition controlled by OCR3A = PE3
 #define PitPin 46                 //Pitch pin definition controlled by OCR5A = PL3
 
+#define echoPin 2 // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 3 //attach pin D3 Arduino to pin Trig of HC-SR04
+
+// defines variables
+long duration; // variable for the duration of sound wave travel
+int distance; // variable for the distance measurement
 
 
 void setup() {
@@ -11,7 +17,12 @@ void setup() {
   pinMode(YawPin, OUTPUT);    //Yaw
   pinMode(PitPin, OUTPUT);    //Pitch
   pinMode(A0, INPUT);
-
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
+  pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
+  Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
+  Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
+  Serial.println("with Arduino UNO R3");
   /*Throttle PWM settings
 
     Clock 1 is being used for Yaw which is represented by the numbers in each register
@@ -47,6 +58,8 @@ void setup() {
      Serial.begin(2400);
   */
 
+  //FlightMode();
+
 }
 void loop() {
   //This code is primarily used for diagnosing the inputs for the clocks
@@ -62,9 +75,10 @@ void loop() {
     Serial.print(OCR4A);
     Serial.print(",  ");
     Serial.println(OCR5A);
-
   */
+  Elevation(GetAltitude(), 50);
 }
+
 
 
 int FlightMode() {                  //FlightMode() shall be called in the setup phase of the main code so that it only runs once
@@ -80,7 +94,7 @@ int FlightMode() {                  //FlightMode() shall be called in the setup 
 */
 
 int Launch(int AltMes) {
-  const int Gnd = 0;                //Gnd = ground level and shall be a constant that is measured when the drone is positioned on the ground
+  const int Gnd = AltMes;           //Gnd = ground level
   const int AltSt = 213;            //AltSt = Altitude at Start. 7ft = 213cm
   if (AltMes < Gnd) {
     while (AltSt > AltMes) {
@@ -94,21 +108,27 @@ int Launch(int AltMes) {
       }
     }
   }
-  return OCR1A;
 }
 
 
 int Elevation(int AltMes, int AltReq) {
-  if (AltMes < AltReq) {
-    OCR1A++;
-    delay(250);
+  if (OCR1A >= 62 && OCR1A <= 125) {
+    if (AltMes < AltReq) {
+      OCR1A++;
+      delay(10);
+    }
+    else {
+      OCR1A--;
+      delay(10);
+    }
   }
-  else {
+  else if (OCR1A < 62) {
+    OCR1A++;
+  }
+  else{
     OCR1A--;
-    delay(250);
   }
 }
-
 
 /*
    RollMes = Value of roll measured by the gyroscope
@@ -132,7 +152,7 @@ int Pitch(int PitMes, int PitReq) {
 }
 
 /*
-   Mes = Measured Value
+   MesGyro = Measured Value
    alpha = Required Value
    both should be measured in degrees
 */
@@ -141,4 +161,20 @@ int adj(int Mes, int alpha) {
   int PW_2 = Mes * 15;             //Change in PW required for maintaining alpha
   int pwAdj = PW_1 - PW_2;         //Total PW signal for alpha including changes in direction
   return pwAdj;
+}
+
+int GetAltitude() {
+  // Clears the trigPin condition
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  // Displays the distance on the Serial Monitor
+  return distance;
 }
