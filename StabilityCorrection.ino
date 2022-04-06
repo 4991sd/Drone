@@ -69,9 +69,9 @@ void loop() {
 
 int FlightMode() {                  //FlightMode() shall be called in the setup phase of the main code so that it only runs once
   delay(2000);
-  OCR4A = 125;
+  OCR3A = 125;
   delay(3000);
-  OCR4A = 94;
+  OCR3A = 94;
 }
 
 /*
