@@ -23,10 +23,4 @@ int  Message = SerialBT.read();
      Serial2.write(Message);
      delay(20);
   }
-//    Serial.write(SerialBT.read());
- //     Serial.write("hello");
-//      Serial.println("hello");
-//      Serial2.write("hello");
-//    Serial2.write(SerialBT.read());
-
 }
