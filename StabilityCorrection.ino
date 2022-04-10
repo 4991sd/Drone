@@ -9,7 +9,7 @@
 // defines variables
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
-
+int Gnd;
 
 void setup() {
   pinMode(ThrotPin, OUTPUT);  //Throttle
@@ -44,91 +44,120 @@ void setup() {
   ICR1L = ICR3L = ICR4L = ICR5L = 0b01100101;
 
 
-  OCR1A = 62;/*Output Compare Register controls the PWM duty cycle. 62 represents 5.5% in this case.
-               This simulates the throttle at bottom of the remote control.
+  OCR1A = 62;
+
+  /*Output Compare Register controls the PWM duty cycle. 62 represents 5.5% in this case.
+    This simulates the throttle at bottom of the remote control.
 
 
 
-     Clock 3 is being used for Throttle which is represented by the numbers in each register
-     3A,4A,5A represent Yaw,Roll,Pitch RESPECTIVELY
-*/
+    Clock 3 is being used for Throttle which is represented by the numbers in each register
+    3A, 4A, 5A represent Yaw, Roll, Pitch RESPECTIVELY
+  */
   OCR3A = OCR4A =  OCR5A = 94; //PWM duty cycle of 8.33% for neutral position
   /*
      The following code is for diagnoses purpose only:
      Serial.begin(2400);
   */
-
-  //FlightMode();
+  //  const int AltSt = 50 + Gnd;
+  Gnd = GetAltitude();
+  Serial.println("Ground initial");
+  delay(1000);
+  FlightMode();
+  Serial.println("FlightMode");
+  MotorTest();
+  Serial.println("MotorTest");
+  //AltSt = Altitude at Start. 7ft = 213cm
 
 }
 void loop() {
   //This code is primarily used for diagnosing the inputs for the clocks
-  /*
-    This code will provide information needed to diagnose the Duty cycle inputs by OCRnA
-    It is not needed for the stability program
 
-    Serial.println("OCR1A,OCR3A, OCR4A, OCR5A: ");
-    Serial.print(OCR1A);
-    Serial.print(",  ");
-    Serial.print(OCR3A);
-    Serial.print(",  ");
-    Serial.print(OCR4A);
-    Serial.print(",  ");
-    Serial.println(OCR5A);
+  //This code will provide information needed to diagnose the Duty cycle inputs by OCRnA
+  //It is not needed for the stability program
+  /*   Serial.println("OCR1A,OCR3A, OCR4A, OCR5A: ");
+      Serial.print(OCR1A);
+      Serial.print(",  ");
+      Serial.print(OCR3A);
+      Serial.print(",  ");
+      Serial.print(OCR4A);
+      Serial.print(",  ");
+      Serial.println(OCR5A);
   */
-  Elevation(GetAltitude(), 50);
+  //int Gnd = GetAltitude();
+  //const int AltSt = 50 + Gnd;          //AltSt = Altitude at Start. 7ft = 213cm
+
+  Elevation(GetAltitude(), 35);
 }
 
 
+void MotorTest() {
+  for (int i = 62; i < 95; i++) {
+    OCR1A = i;
+    /*
+      Serial.println("OCR1A,OCR3A, OCR4A, OCR5A: ");
+      Serial.print(OCR1A);
+      Serial.print(",  ");
+      Serial.print(OCR3A);
+      Serial.print(",  ");
+      Serial.print(OCR4A);
+      Serial.print(",  ");
+      Serial.println(OCR5A);
+      delay(10);
+    */
+    delay(10);
+  }
+  for (int i = 95; i > 62; i--) {
+    OCR1A = i;
+    /*
+      Serial.println("OCR1A,OCR3A, OCR4A, OCR5A: ");
+      Serial.print(OCR1A);
+      Serial.print(",  ");
+      Serial.print(OCR3A);
+      Serial.print(",  ");
+      Serial.print(OCR4A);
+      Serial.print(",  ");
+      Serial.println(OCR5A);
+      delay(10);
+    */
+    delay(100);
 
-int FlightMode() {                  //FlightMode() shall be called in the setup phase of the main code so that it only runs once
-  delay(2000);
+  }
+}
+
+int FlightMode() {
+  //FlightMode() shall be called in the setup phase of the main code so that it only runs once
   OCR3A = 125;
-  delay(3000);
-  OCR3A = 94;
+  delay(2000);
+  OCR3A = 95;
 }
+
+
 
 /*
   AltMes = Altitude Measured by the ultrasonic sensor
-  AltReq = The required altitude needed for the task
+  AltReq = The required; altitude needed for the task
 */
 
-int Launch(int AltMes) {
-  const int Gnd = AltMes;           //Gnd = ground level
-  const int AltSt = 213;            //AltSt = Altitude at Start. 7ft = 213cm
-  if (AltMes < Gnd) {
-    while (AltSt > AltMes) {
-      if (OCR1A < 94) {
-        OCR1A = OCR1A + 3;
-        delay(1000);
-      }
-      else {
-        OCR1A = OCR1A++;
-        delay(1500);
-      }
-    }
-  }
-}
-
-
 int Elevation(int AltMes, int AltReq) {
-  if (OCR1A >= 62 && OCR1A <= 125) {
-    if (AltMes < AltReq) {
+
+  if  (AltMes > Gnd) {
+    if (OCR1A <= 105 && (AltMes < (AltReq - 2))) {
       OCR1A++;
-      delay(10);
+      Serial.println("rising");
     }
-    else {
+    else if (OCR1A >= 85 && (AltMes > (AltReq + 2))) {
       OCR1A--;
-      delay(10);
+      Serial.println("falling");
     }
   }
-  else if (OCR1A < 62) {
-    OCR1A++;
-  }
-  else{
-    OCR1A--;
+  else {
+    OCR1A = 62;
+    Serial.println("off");
+
   }
 }
+
 
 /*
    RollMes = Value of roll measured by the gyroscope
@@ -177,4 +206,6 @@ int GetAltitude() {
   distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
   // Displays the distance on the Serial Monitor
   return distance;
+  Serial.print("distance  ");
+  Serial.println(distance);
 }
