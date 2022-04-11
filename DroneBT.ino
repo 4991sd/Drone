@@ -1,5 +1,5 @@
-#define Rxd 16
-#define Txd 17
+#define Rxd 25
+#define Txd 33
 
 #include "BluetoothSerial.h"
 
@@ -12,7 +12,7 @@ void setup() {
   Serial.begin(115200);
  SerialBT.begin("David's Drone"); //Bluetooth device name
   Serial.println("The device started, now you can pair it with bluetooth!");
-  Serial2.begin(9600, SERIAL_8N1, Rxd, Txd);
+  Serial2.begin(19200, SERIAL_8N1, Rxd, Txd);
 }
 
 void loop() {
