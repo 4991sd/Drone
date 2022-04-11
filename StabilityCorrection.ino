@@ -81,8 +81,6 @@ void loop() {
       Serial.print(",  ");
       Serial.println(OCR5A);
   */
-  //int Gnd = GetAltitude();
-  //const int AltSt = 50 + Gnd;          //AltSt = Altitude at Start. 7ft = 213cm
 
   Elevation(GetAltitude(), 35);
 }
