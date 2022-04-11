@@ -6,34 +6,20 @@
   Detect d = Detect();
   LIDARLite lidarStuff;
   Servo panServo;
-
-  struct Var{
-    
-  // Create a servo object
-  // Declaration of Pins
-   
+  
   #define buzzerPin 8      // buzzer
   #define pingPin 17     // Ultrasonic sensor
   #define servoPin 4      // servo motor
 
-  // Variables 
-    double meter = lidarStuff.distance(); 
-    int angle = 0;
-    float x, y = 0;
-    int distance [4] = {0, 0, 0, 0};
-    int theta [4] = {0, 0, 0, 0};
-    double markerX[4] = {0,0,0,0};
-    double markerY[4] = {0,0,0,0};
-   
-  
-  };
  
+
 void setup() {
   Serial.begin(9600);           // opens serial port, sets data rate to 9600 bps
   lidarStuff.begin(0, true);    // default I2C freq to 400 kHz
   pinMode(buzzerPin, OUTPUT);   // Set buzzer - pin 8 as an output
   panServo.attach(servoPin);    // We need to attach the servo to the used pin number
   lidarStuff.configure(0);      // default mode, balanced performance.
+  Serial1.begin(19200);
 }
 
 
@@ -43,13 +29,20 @@ void setup() {
                                   //We can also measure these sides with lidar and calculations
 
 
-
   //MAIN LOOP
 void loop() { 
-  struct Var v;
-
-  servo();
+    int Command = 0;
+    int  Message = Serial1.read();
+      if( Message !=  -1){
+      Serial.print(Message); Serial.print("\n");
+      //start = 115+116+97+114+116+13+10
+      //stop = 1151161111121310
+    if (Command == 571)
+    {
+      DataCollection();  
+   }
  }
+}
 
 
 
@@ -75,47 +68,47 @@ int GetAltitude() {
     pinMode(pingPin, INPUT); //Read from same pin. The duration of the HIGH pulse tells the distance
     duration = pulseIn(pingPin, HIGH);
     cm = duration / 58; //convert time into a distance
-    delay(20);
-    
+    delay(20);    
     return cm;
   }
 
  //------Uses the LiDAR Sensor to get horizontal distance of Markers or Objects----------
- int GetDistance() {
-    int meter = 0; 
-    if (meter >= 100) {
-      meter = meter * 0.01;
-     //Serial.println(" meters");
-                      }
-    else {
-    meter = lidarStuff.distance();
-    //Serial.println(" cm");
-         }
-  return  meter;
-}
-//trying to be consistent with units remooving CM 
+ //trying to be consistent with units removing CM 
 
-//-------SERVO-------------------------
-  void servo() {
-    int angle = 0;
-    //angle in degrees 
-    for (angle = panServo.read(); angle < 180; angle += 2) {
-   
-        panServo.write(angle); 
-        delay(100);
-        d.CalculateCenter(angle, GetDistance());
+/*
+ void GetDistance(int r[180]) {
+    int meter = lidarStuff.distance(); 
+
+    for(int l = 0; l < 180; l++)
+    { 
+    r [l] = meter;
+    delay(100);
     }
- 
-    for (angle = panServo.read(); angle > 0; angle -= 2) {
+}
+*/
+
+  //-----Servo Motor and Lidar Sensor-----
+    
+int angle = 0;
+void DataCollection(){
+    //angle in degrees 
+    for (angle = 0; angle <= 180; angle += 2) {
+        panServo.write(angle); 
+ //       int range = lidarStuff.distance();
+        delay(100);
         
+    }
+        //5ft range
+//        if( range < 305){
+ //       d.CalculateCenter(range, angle);
+//       }
+    for (angle = panServo.read(); angle > 0; angle -= 2) {        
         panServo.write(angle);
         delay(100);
-    }
+      } 
+    
 }
-
-// -----Calculates the Center
-
 //--------------PICK-UP PACKAGE------------
-void PickUpPackage() {
+void PickUpPackage(){
 
 }
