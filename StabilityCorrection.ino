@@ -3,8 +3,8 @@
 #define YawPin 5                  //Yaw pin definition controlled by OCR3A = PE3
 #define PitPin 46                 //Pitch pin definition controlled by OCR5A = PL3
 
-#define echoPin 2 // attach pin D2 Arduino to pin Echo of HC-SR04
-#define trigPin 3 //attach pin D3 Arduino to pin Trig of HC-SR04
+#define echoPin 22 // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 23 //attach pin D3 Arduino to pin Trig of HC-SR04
 
 // defines variables
 long duration; // variable for the duration of sound wave travel
@@ -25,10 +25,8 @@ void setup() {
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
   /*Throttle PWM settings
-
     Clock 1 is being used for Yaw which is represented by the numbers in each register
     Timer Counter Control Register sets the modes for PWM and clk prescaler
-
     1A,3A,4A,5A represent throttle,Yaw,Roll,Pitch RESPECTIVELY*/
   TCCR1A = TCCR3A = TCCR4A = TCCR5A = 0b10000010;
 
@@ -49,9 +47,6 @@ void setup() {
 
   /*Output Compare Register controls the PWM duty cycle. 62 represents 5.5% in this case.
     This simulates the throttle at bottom of the remote control.
-
-
-
     Clock 3 is being used for Throttle which is represented by the numbers in each register
     3A, 4A, 5A represent Yaw, Roll, Pitch RESPECTIVELY
   */
@@ -60,17 +55,17 @@ void setup() {
      The following code is for diagnoses purpose only:
      Serial.begin(2400);
   */
-  const int Gnd = GetAltitutde();
-  const int AltSt = 50 + Gnd;
-  //  const int AltSt = 50 + Gnd;
-  //  Serial.println("Ground initial");
-  //  delay(1000);
-  //  FlightMode();
-  //  Serial.println("FlightMode");
-  //  MotorTest();
-  //  Serial.println("MotorTest");
-  
+  Gnd = GetAltitude();
+  AltSt = 50 + Gnd;
+  Serial.println("Ground initial");
+  delay(1000);
+  FlightMode();
+  Serial.println("FlightMode");
+  MotorTest();
+  Serial.println("MotorTest");
+  //AltSt = Altitude at Start. 7ft = 213cm
   Launch();
+
 }
 void loop() {
   //This code is primarily used for diagnosing the inputs for the clocks
@@ -92,6 +87,11 @@ void loop() {
   Elevation(GetAltitude(), 35);
 }
 
+void Launch(){
+  for (int i = Gnd; i++;i<AltSt){
+    Elevation(GetAltitude(),i);
+  }
+}
 
 void MotorTest() {
   for (int i = 62; i < 95; i++) {
@@ -160,11 +160,6 @@ int Elevation(int AltMes, int AltReq) {
   }
 }
 
-void Launch() {
-  for (int i = Gnd; i++; i < AltSt) {
-    Elevation(GetAltitude(), i);
-  }
-}
 
 /*
    RollMes = Value of roll measured by the gyroscope
@@ -216,3 +211,4 @@ int GetAltitude() {
   Serial.print("distance  ");
   Serial.println(distance);
 }
+
