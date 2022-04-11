@@ -10,6 +10,7 @@
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 int Gnd;
+int AltSt;
 
 void setup() {
   pinMode(ThrotPin, OUTPUT);  //Throttle
@@ -59,16 +60,17 @@ void setup() {
      The following code is for diagnoses purpose only:
      Serial.begin(2400);
   */
+  const int Gnd = GetAltitutde();
+  const int AltSt = 50 + Gnd;
   //  const int AltSt = 50 + Gnd;
-  Gnd = GetAltitude();
-  Serial.println("Ground initial");
-  delay(1000);
-  FlightMode();
-  Serial.println("FlightMode");
-  MotorTest();
-  Serial.println("MotorTest");
-  //AltSt = Altitude at Start. 7ft = 213cm
-
+  //  Serial.println("Ground initial");
+  //  delay(1000);
+  //  FlightMode();
+  //  Serial.println("FlightMode");
+  //  MotorTest();
+  //  Serial.println("MotorTest");
+  
+  Launch();
 }
 void loop() {
   //This code is primarily used for diagnosing the inputs for the clocks
@@ -158,6 +160,11 @@ int Elevation(int AltMes, int AltReq) {
   }
 }
 
+void Launch() {
+  for (int i = Gnd; i++; i < AltSt) {
+    Elevation(GetAltitude(), i);
+  }
+}
 
 /*
    RollMes = Value of roll measured by the gyroscope
