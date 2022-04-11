@@ -33,10 +33,14 @@ void setup() {
 void loop() { 
     int Command = 0;
     int  Message = Serial1.read();
+    while(Message != -1 && Message != 10)
+    {
+      Command = Message + Command;
+    }
       if( Message !=  -1){
       Serial.print(Message); Serial.print("\n");
       //start = 115+116+97+114+116+13+10
-      //stop = 1151161111121310
+      //stop = 115+116+1111121310
     if (Command == 571)
     {
       DataCollection();  
