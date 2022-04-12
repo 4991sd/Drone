@@ -19,8 +19,8 @@ Servo panServo;
 #define RollPin 6                 //Roll pin definition controlled by OCR4A = PH3
 #define YawPin 5                  //Yaw pin definition controlled by OCR3A = PE3
 #define PitPin 46                 //Pitch pin definition controlled by OCR5A = PL3
-#define echoPin 2 // attach pin D2 Arduino to pin Echo of HC-SR04
-#define trigPin 3 //attach pin D3 Arduino to pin Trig of HC-SR04
+#define echoPin 22 // attach pin D2 Arduino to pin Echo of HC-SR04
+#define trigPin 23 //attach pin D3 Arduino to pin Trig of HC-SR04
 
 
 //CONSTANT VALUES
