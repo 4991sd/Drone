@@ -263,7 +263,9 @@ int Elevation(int AltMes, int AltReq) {
     }
   }
 
-  else if (OCR1A < 85 && AltMes!=Gnd
+  else if (OCR1A < 85 && AltMes!=Gnd){
+  
+  }
     
 }
 
