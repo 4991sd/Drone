@@ -1,39 +1,3 @@
-/*
-  FUNCTIONS TO-DO LIST
-  ----------------------------
-  -----------------------------
-  SENSORS (declare pins and create functions if needed)
-  ------------
-  BUZZER (DONE)
-  SERVO  (DONE)
-  GYRO (Done)
-  Ultrasonic Sensor (DONE)
-  LIDAR (Done)
-
-  ACTIONS
-  -----------
-  DroneStart
-  GetDistance (DONE)
-  PickUpPackage
-  Yaw
-  Pitch
-  Roll
-  Throttle
-  GetAltitude (DONE)
-  CalculateCenter (IN PROGRESS)
-  Drone2CenterDist
-  AltHold
-  AutoLevel
-
-  PWM
-  ----------
-  CHAN1
-  CHAN2
-  CHAN3
-  CHAN4
-
-
-*/
 
 #include <Wire.h>
 #include <LIDARLite.h>
