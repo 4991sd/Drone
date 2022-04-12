@@ -131,15 +131,27 @@ void loop() {
 
 
 void Launch() {
-  Elevation(GetAltitude(), 50);
-    AutoLevel();
-//  for (int i = Gnd; i++; i < AltSt) {
-//    Elevation(GetAltitude(), i);
-//    AutoLevel();
-//  }
+  for (float i = 65; i <= AltSt; i = i + .05) {
+    Elevation(GetAltitude(), round(i));
+    AutoLevel(0);
+    Serial.print("i = ");
+    Serial.println(i);
+    Serial.print("OCR1A = ");
+    Serial.println(OCR1A);
+  }
 }
 
-
+void Land(int AltMes) {
+  for (int i = GetAltitude(); i > Gnd; i = i - .05) {
+    Elevation(GetAltitude(), i);
+    AutoLevel(0);
+    Serial.print("OCR1A = ");
+    Serial.println(OCR1A);
+    if (AltMes <= Gnd) {
+      OCR1A = 62;
+    }
+  }
+}
 
 void MotorTest() {
   for (int i = 62; i < 95; i++) {
@@ -251,10 +263,8 @@ int Elevation(int AltMes, int AltReq) {
     }
   }
 
-  else if (OCR1A < 85 && OCR1A > 62) {
-
-  }
-
+  else if (OCR1A < 85 && AltMes!=Gnd
+    
 }
 
 
