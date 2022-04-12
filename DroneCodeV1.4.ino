@@ -344,7 +344,7 @@ float read_gyro(char yprangle) {
 void AutoLevel(int alpha) {
   Roll(ReadRoll(), alpha);
   Yaw(ReadYaw(), alpha);
-  Pitch(ReadPitch(), alpa);
+  Pitch(ReadPitch(), alpha);
 
 }
 
