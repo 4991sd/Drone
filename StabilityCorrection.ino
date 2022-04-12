@@ -61,7 +61,7 @@ void setup() {
   delay(1000);
   FlightMode();
   Serial.println("FlightMode");
-  MotorTest();
+  MotorTest();    //This is only used for testing purposes
   Serial.println("MotorTest");
   //AltSt = Altitude at Start. 7ft = 213cm
   Launch();
@@ -88,6 +88,15 @@ void loop() {
 void Launch(){
   for (int i = Gnd; i++;i<AltSt){
     Elevation(GetAltitude(),i);
+    AutoLevel();
+
+  }
+}
+
+
+void Land() {
+  for (int i = GetAltitude(); i--; i == Gnd) {
+    Elevation(GetAltitude(), i);
   }
 }
 
