@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <LIDARLite.h>
 #include "Detect.h"
+#include "ReadMessage.h"
 #include <Servo.h>
 
   Detect d = Detect();
@@ -27,31 +28,34 @@ void setup() {
   const int OutOfRange      = 30;   //distance lidar measures but is too far away and we can ignore
   const int perimeterSides  = 10;   //length of sides of  one of the perimeters
                                   //We can also measure these sides with lidar and calculations
-
+const int BUFFER_SIZE = 100;
+char buf[BUFFER_SIZE];
 
   //MAIN LOOP
 void loop() { 
-    int Command = 0;
-    int  Message = Serial1.read();
-    while(Message != -1 && Message != 10)
-    {
-      Command = Message + Command;
+    String Command = " ";
+    int rlen = Serial1.readBytesUntil('\n',buf,BUFFER_SIZE);
+    for(int i = 0; i < rlen; i++){
+      if (buf[i] == '\r'){
+       break;
     }
-      if( Message !=  -1){
-      Serial.print(Message); Serial.print("\n");
-      //start = 115+116+97+114+116+13+10
-      //stop = 115+116+1111121310
-    if (Command == 571)
+          Command.concat(buf[i]);
+
+}
+Serial.print(Command);
+Serial.write('\n');
+
+ if(Command == " start")
     {
+      Serial.print("running");
       DataCollection();  
-   }
- }
+    }
+  Command = "";
 }
 
 
 
-
-//-------The buzzer sensor is used to alert when Package is Located-----------
+//-------The buzzer sensor is used to ale/rt when Package is Located-----------
 void buzzer() { 
   tone(buzzerPin, 1000); // Send 1KHz sound signal...
   delay(500);            // ...for 1/2 sec
@@ -98,14 +102,16 @@ void DataCollection(){
     //angle in degrees 
     for (angle = 0; angle <= 180; angle += 2) {
         panServo.write(angle); 
- //       int range = lidarStuff.distance();
-        delay(100);
+        int range = lidarStuff.distance();
+
+        //Dectection range limited to 2ft to 6ft
+        if(range < 183 && range > 60)
+        {
+          d.CalculateCenter(range, angle);
+        }
+        delay(10);
         
-    }
-        //5ft range
-//        if( range < 305){
- //       d.CalculateCenter(range, angle);
-//       }
+    }     
     for (angle = panServo.read(); angle > 0; angle -= 2) {        
         panServo.write(angle);
         delay(100);
