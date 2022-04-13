@@ -107,16 +107,16 @@ void setup() {
   Serial.println(OCR1A);
   FlightMode();
   //buzzer();
-  Serial.println("Launch Started");
+  Serial.println("---------------------Launch Started---------------------");
   LandFlag = false;
   LaunchFlag = true;
   Launch();
   LaunchFlag = false;
-  Serial.println("Launch Ended");
+  Serial.println("---------------------Launch Ended---------------------");
   LandFlag = true;
-  Serial.println("Land Started");
+  Serial.println("---------------------Land Started---------------------");
   Land(GetAltitude());
-  Serial.println("Land Ended");
+  Serial.println("---------------------Land Ended---------------------");
   //  Elevation(GetAltitude(), 80);
 
   //AltSt = Altitude at Start. 7ft = 213cm
