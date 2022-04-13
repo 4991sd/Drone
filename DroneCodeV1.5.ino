@@ -114,11 +114,12 @@ void setup() {
   LaunchFlag = false;
   Serial.println("Launch Ended");
   LandFlag = true;
+  Serial.println("Land Started");
   Land(GetAltitude());
+  Serial.println("Land Ended");
   //  Elevation(GetAltitude(), 80);
 
   //AltSt = Altitude at Start. 7ft = 213cm
-
 }
 
 
@@ -166,21 +167,21 @@ void Launch() {
 void Land(int AltMes) {
 
   LandFlag = true;
-  for (float i = GetAltitude(); i > Gnd; i = i - .05) {
-    Elevation(GetAltitude(), round(i));
-    AutoLevel(0);
-    Serial.print("OCR1A = ");
-    Serial.println(OCR1A);
-    //    if (AltMes <= Gnd) {
-    //      OCR1A = 62;
-    //    }
+  if (AltMes > Gnd) {
+    for (float i = GetAltitude(); i > Gnd; i = i - .05) {
+      Elevation(GetAltitude(), round(i));
+      AutoLevel(0);
+      Serial.print("OCR1A = ");
+      Serial.println(OCR1A);
+      //    if (AltMes <= Gnd) {
+      //      OCR1A = 62;
+      //    }
+    }
   }
-
-}
-
-void Land2(int AltMes) {
-
-
+  else {
+    OCR1A = 62;
+    Serial.print("Off");
+  }
 }
 
 void MotorTest() {
@@ -277,7 +278,7 @@ int FlightMode() {
 
 int Elevation(int AltMes, int AltReq) {
 
-  if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {
+  if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {// && LaunchFlag == false && LandFlag == false
     if (AltMes < (AltReq - 2)) {
       OCR1A++;
       Serial.print("Distance = ");
@@ -297,7 +298,11 @@ int Elevation(int AltMes, int AltReq) {
     //    else {
     //      OCR1A = 90;
     //    }
-  } else if (OCR1A <= 85 && LandFlag == false && LaunchFlag == false) {
+  }
+  if ((OCR1A <= 85 || OCR1A >= 105 ) && AltMes > Gnd) {
+    OCR1A = 86;
+  }
+  else if (OCR1A <= 85 && LandFlag == false && LaunchFlag == false) {
     OCR1A++;
     Serial.println("rising");
     Serial.print("Distance = ");
@@ -306,37 +311,13 @@ int Elevation(int AltMes, int AltReq) {
     Serial.println(OCR1A);
   }
 
-  //  else if (OCR1A <= 85 && LaunchFlag == true && LandFlag == false) {
-  //    //    for (float i = OCR1A; i < 86; i = i + .05) {
-  //    //      OCR1A = round(i);
-  //    //      Serial.println("Elevation");
-  //    //      Serial.println("rising");
-  //    //      Serial.print("OCR1A = ");
-  //    //      Serial.println(OCR1A);
-  //    //      delay(40);
-  //    //    }
-  //
-  //  }
-
   else if (LandFlag == true && AltMes <= Gnd) {
     OCR1A = 62;
-    Serial.print("Off");
-  }
-  if (OCR1A <= 85 && LandFlag == true && LaunchFlag == false) {
-    OCR1A = 86;
-  }
-  else {
-    Serial.println("Last Condition");
     Serial.print("OCR1A = ");
     Serial.println(OCR1A);
-    Serial.print("Distance = ");
-    Serial.println(GetAltitude());
-
-    OCR1A = 86;
+    Serial.println("Off");
   }
 }
-
-
 /*
    RollMes = Value of roll measured by the gyroscope
    YawMes = Value of yaw measured by the gyroscope
