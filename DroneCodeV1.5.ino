@@ -140,37 +140,43 @@ void loop() {
 
 }
 
-
-
 void Launch() {
   LaunchFlag = true;
   Serial.println("Launching");
-  for (float i = 65; i <= AltSt; i = i + .05) {
-    for (float i = OCR1A; i < 86; i = i + .05) {
+
+  for (float i = OCR1A; i < 95; i = i + .1) {
+    if (GetAltitude() <= Gnd) {
       OCR1A = round(i);
-      Serial.println("Elevation");
+      Serial.println("Launching First Loop");
       Serial.println("rising");
       Serial.print("OCR1A = ");
       Serial.println(OCR1A);
       delay(40);
     }
+    else {
+      break;
+    }
+  }
+  for (float i = GetAltitude(); i <= AltSt; i = i + .1) {
     Elevation(GetAltitude(), round(i));
-    AutoLevel(0);
+    //AutoLevel(0);
+    Serial.println("Launching Second Loop");
     Serial.print("i = ");
     Serial.println(i);
     Serial.print("OCR1A = ");
     Serial.println(OCR1A);
     delay(40);
   }
-}
+
 
 void Land(int AltMes) {
 
   LandFlag = true;
   if (AltMes > Gnd) {
-    for (float i = GetAltitude(); i > Gnd; i = i - .05) {
+    for (float i = GetAltitude(); i > Gnd; i = i - .1) {
       Elevation(GetAltitude(), round(i));
-      AutoLevel(0);
+      //AutoLevel(0);
+      Serial.println("Landing Loop");
       Serial.print("OCR1A = ");
       Serial.println(OCR1A);
       //    if (AltMes <= Gnd) {
@@ -181,6 +187,54 @@ void Land(int AltMes) {
   else {
     OCR1A = 62;
     Serial.print("Off");
+  }
+}
+  
+/*
+  AltMes = Altitude Measured by the ultrasonic sensor
+  AltReq = The required; altitude needed for the task
+*/
+
+int Elevation(int AltMes, int AltReq) {
+
+  if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {// && LaunchFlag == false && LandFlag == false
+    if (AltMes < (AltReq - 2)) {
+      OCR1A++;
+      Serial.print("Distance = ");
+      Serial.print(GetAltitude());
+      Serial.println("OCR1A rising");
+    }
+    else if (AltMes > (AltReq + 2)) {
+      OCR1A--;
+      Serial.print("Distance = ");
+      Serial.print(GetAltitude());
+      Serial.println("OCR1A falling");
+    }
+    //    else if (AltMes <= Gnd) {
+    //
+    //      OCR1A = 62;
+    //    }
+    //    else {
+    //      OCR1A = 90;
+    //    }
+  }
+  if ((OCR1A <= 85 || OCR1A >= 105 ) && AltMes > Gnd) {
+    OCR1A = 86;
+  }
+  else if (OCR1A <= 85 && LandFlag == false && LaunchFlag == false) {
+    OCR1A++;
+    Serial.println("rising");
+    Serial.print("Distance = ");
+    Serial.print(GetAltitude());
+    Serial.print("OCR1A = ");
+    Serial.println(OCR1A);
+  }
+
+  else if (LandFlag == true && AltMes <= Gnd) {
+    OCR1A = 62;
+    Serial.print("OCR1A = ");
+    Serial.println(OCR1A);
+    Serial.println("Off");
   }
 }
 
@@ -271,53 +325,7 @@ int FlightMode() {
 
 
 }
-/*
-  AltMes = Altitude Measured by the ultrasonic sensor
-  AltReq = The required; altitude needed for the task
-*/
 
-int Elevation(int AltMes, int AltReq) {
-
-  if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {// && LaunchFlag == false && LandFlag == false
-    if (AltMes < (AltReq - 2)) {
-      OCR1A++;
-      Serial.print("Distance = ");
-      Serial.print(GetAltitude());
-      Serial.println("OCR1A rising");
-    }
-    else if (AltMes > (AltReq + 2)) {
-      OCR1A--;
-      Serial.print("Distance = ");
-      Serial.print(GetAltitude());
-      Serial.println("OCR1A falling");
-    }
-    //    else if (AltMes <= Gnd) {
-    //
-    //      OCR1A = 62;
-    //    }
-    //    else {
-    //      OCR1A = 90;
-    //    }
-  }
-  if ((OCR1A <= 85 || OCR1A >= 105 ) && AltMes > Gnd) {
-    OCR1A = 86;
-  }
-  else if (OCR1A <= 85 && LandFlag == false && LaunchFlag == false) {
-    OCR1A++;
-    Serial.println("rising");
-    Serial.print("Distance = ");
-    Serial.print(GetAltitude());
-    Serial.print("OCR1A = ");
-    Serial.println(OCR1A);
-  }
-
-  else if (LandFlag == true && AltMes <= Gnd) {
-    OCR1A = 62;
-    Serial.print("OCR1A = ");
-    Serial.println(OCR1A);
-    Serial.println("Off");
-  }
-}
 /*
    RollMes = Value of roll measured by the gyroscope
    YawMes = Value of yaw measured by the gyroscope
