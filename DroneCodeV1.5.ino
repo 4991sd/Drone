@@ -332,7 +332,7 @@ int FlightMode() {
    PitMes = Value of pitch measured by the gyroscope
 */
 
-int Roll(float RollMes, int RollReq) {//both should be measured in degrees
+void Roll(float RollMes, int RollReq) {//both should be measured in degrees
   int OcrNum = adj(RollMes, RollReq) / 16;
   OCR4A = OcrNum;
 }
@@ -342,7 +342,7 @@ void Yaw(int YawMes, int YawReq) {
   OCR3A = OcrNum;
 }
 
-int Pitch(float PitMes, int PitReq) {
+void Pitch(float PitMes, int PitReq) {
   int OcrNum = adj(PitMes, PitReq) / 16;
   OCR5A = OcrNum;
 }
@@ -410,8 +410,14 @@ float read_gyro(char yprangle) {
 // ================================================================
 void AutoLevel(int alpha) {
   Roll(ReadRoll(), alpha);
+  Serial.print("Roll: ");
+  Serial.println(OCR4A);
   Yaw(ReadYaw(), alpha);
+  Serial.print("Yaw: ");
+  Serial.println(OCR3A);
   Pitch(ReadPitch(), alpha);
+  Serial.print("Pitch: ");
+  Serial.println(OCR5A);
 
 }
 
