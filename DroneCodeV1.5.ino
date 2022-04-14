@@ -32,6 +32,9 @@ int Gnd;
 int AltSt;
 bool LandFlag;
 bool LaunchFlag;
+float Y;
+float R;
+float P;
 
 // ================================================================
 // ===               MPU control/status vars               ===
@@ -68,7 +71,7 @@ void setup() {
   pinMode(A0, INPUT);
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
-  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
+  Serial.begin(500000); // opens serial port, sets data rate to 9600 bps
   lidarStuff.begin(0, true); // default I2C freq to 400 kHz
   pinMode(buzzerPin, OUTPUT); // Set buzzer - pin 8 as an output
   panServo.attach(servoPin); // We need to attach the servo to the used pin number
@@ -98,27 +101,25 @@ void setup() {
   OCR3A = OCR4A =  OCR5A = 94; //PWM duty cycle of 8.33% for neutral position
 
   initialize_MPU();
-  Gnd = GetAltitude();
-  Serial.print("Gnd:  ");
-  Serial.println(Gnd);
-  AltSt = 80 + Gnd;
-  delay(1000);
-  Serial.print("throttle: ");
-  Serial.println(OCR1A);
-  FlightMode();
-  //buzzer();
-  Serial.println("---------------------Launch Started---------------------");
-  LandFlag = false;
-  LaunchFlag = true;
-  Launch();
-  LaunchFlag = false;
-  Serial.println("---------------------Launch Ended---------------------");
-  LandFlag = true;
-  Serial.println("---------------------Land Started---------------------");
-  Land(GetAltitude());
-  Serial.println("---------------------Land Ended---------------------");
-  //  Elevation(GetAltitude(), 80);
-
+  //  Gnd = GetAltitude();
+  //  Serial.print("Gnd:  ");
+  //  Serial.println(Gnd);
+  //  AltSt = 80 + Gnd;
+  //  delay(1000);
+  //  Serial.print("throttle: ");
+  //  Serial.println(OCR1A);
+  //  FlightMode();
+  //  //buzzer();
+  //  Serial.println("---------------------Launch Started---------------------");
+  //  LandFlag = false;
+  //  LaunchFlag = true;
+  //  Launch();
+  //  LaunchFlag = false;
+  //  Serial.println("---------------------Launch Ended---------------------");
+  //  LandFlag = true;
+  //  Serial.println("---------------------Land Started---------------------");
+  //  Land(GetAltitude());
+  //  Serial.println("---------------------Land Ended---------------------");
   //AltSt = Altitude at Start. 7ft = 213cm
 }
 
@@ -130,13 +131,13 @@ void setup() {
 // ================================================================
 void loop() {
 
-  //read_gyro('s');
+  //  read_gyro('s');
 
   //AutoLevel();
 
   // MotorTest();
 
-
+  AutoLevel(0);
 
 }
 
@@ -167,7 +168,7 @@ void Launch() {
     Serial.println(OCR1A);
     delay(40);
   }
-
+}
 
 void Land(int AltMes) {
 
@@ -189,7 +190,7 @@ void Land(int AltMes) {
     Serial.print("Off");
   }
 }
-  
+
 /*
   AltMes = Altitude Measured by the ultrasonic sensor
   AltReq = The required; altitude needed for the task
@@ -380,23 +381,27 @@ float read_gyro(char yprangle) {
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+    Y =  ypr[0] * 180 / M_PI;
+    P =  ypr[1] * 180 / M_PI;
+    R =  ypr[2] * 180 / M_PI;
+
     if (YPR == 'y') { //Read Yaw angle
-      return ypr[0] * 180 / M_PI;
+      Y =  ypr[0] * 180 / M_PI;
     }
     else if (YPR == 'p') { //Read Pitch angle
-      return ypr[1] * 180 / M_PI;
+      P =  ypr[1] * 180 / M_PI;
     }
     else if (YPR == 'r') { //Read Roll angle
-      return ypr[2] * 180 / M_PI;
+      R =  ypr[2] * 180 / M_PI;
     } else {
       //Serial.print("Error");
 
       Serial.print("Yaw:");
-      Serial.print(ypr[0] * 180 / M_PI);
+      Serial.print(Y);
       Serial.print(" Pitch:");
-      Serial.print(ypr[1] * 180 / M_PI);
+      Serial.print(P);
       Serial.print(" Roll:");
-      Serial.println(ypr[2] * 180 / M_PI);
+      Serial.println(R);
       delay(10);
     }
 #endif
@@ -409,15 +414,19 @@ float read_gyro(char yprangle) {
 // ===               AutoLevel      (IN PROGRESS)         ===
 // ================================================================
 void AutoLevel(int alpha) {
-  Roll(ReadRoll(), alpha);
+  if (OCR4A < 125 && OCR3A && OCR5A) {
+
+  }
+  Roll(R, alpha);
   Serial.print("Roll: ");
   Serial.println(OCR4A);
-  Yaw(ReadYaw(), alpha);
+  Yaw(Y, alpha);
   Serial.print("Yaw: ");
   Serial.println(OCR3A);
-  Pitch(ReadPitch(), alpha);
+  Pitch(P, alpha);
   Serial.print("Pitch: ");
   Serial.println(OCR5A);
+  read_gyro('s');
 
 }
 
