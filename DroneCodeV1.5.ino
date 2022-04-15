@@ -102,25 +102,26 @@ void setup() {
   
   
   initialize_MPU();
-  //  Gnd = GetAltitude();
-  //  Serial.print("Gnd:  ");
-  //  Serial.println(Gnd);
-  //  AltSt = 80 + Gnd;
-  //  delay(1000);
-  //  Serial.print("throttle: ");
-  //  Serial.println(OCR1A);
-  //  FlightMode();
-  //  //buzzer();
-  //  Serial.println("---------------------Launch Started---------------------");
-  //  LandFlag = false;
-  //  LaunchFlag = true;
-  //  Launch();
-  //  LaunchFlag = false;
-  //  Serial.println("---------------------Launch Ended---------------------");
-  //  LandFlag = true;
-  //  Serial.println("---------------------Land Started---------------------");
-  //  Land(GetAltitude());
-  //  Serial.println("---------------------Land Ended---------------------");
+  Gnd = GetAltitude();
+  Serial.print("Gnd:  ");
+  Serial.println(Gnd);
+  AltSt = 80 + Gnd;
+  delay(1000);
+  Serial.print("throttle: ");
+  Serial.println(OCR1A);
+  FlightMode();
+  //  MotorTest();
+  //buzzer();
+  Serial.println("---------------------Launch Started---------------------");
+  LandFlag = false;
+  LaunchFlag = true;
+  Launch();
+  LaunchFlag = false;
+  Serial.println("---------------------Launch Ended---------------------");
+  LandFlag = true;
+  Serial.println("---------------------Land Started---------------------");
+  Land(GetAltitude());
+  Serial.println("---------------------Land Ended---------------------");
   //AltSt = Altitude at Start. 7ft = 213cm
 }
 
@@ -145,11 +146,10 @@ void loop() {
 }
 
 void Launch() {
-  LaunchFlag = true;
   Serial.println("Launching");
-
-  for (float i = OCR1A; i < 95; i = i + .1) {
-    if (GetAltitude() <= Gnd) {
+  //Ramp up of throttle
+  for (float i = OCR1A; i < 95; i = i + .1) {     //increment by .1 in order to delay the increment while not including delays
+    if (GetAltitude() <= Gnd) {     //Condition needed to ramp up until drone leaves the ground
       OCR1A = round(i);
       Serial.println("Launching First Loop");
       Serial.println("rising");
@@ -161,31 +161,44 @@ void Launch() {
       break;
     }
   }
+  //Gradual increase of altitude to rise to designated level
   for (float i = GetAltitude(); i <= AltSt; i = i + .1) {
-    Elevation(GetAltitude(), round(i));
-    //AutoLevel(0);
-    Serial.println("Launching Second Loop");
-    Serial.print("i = ");
-    Serial.println(i);
-    Serial.print("OCR1A = ");
-    Serial.println(OCR1A);
-    delay(40);
+    // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
+    if (GetAltitude() > (AltSt + 20)) {
+      OCR1A = 62;
+      Serial.print("OCR1A = ");
+      Serial.println(OCR1A);
+      break;
+    }
+    else {
+      Elevation(GetAltitude(), round(i));
+      AutoLevel(0);
+      Serial.println("Launching Second Loop");
+      Serial.print("i = ");
+      Serial.println(i);
+      Serial.print("OCR1A = ");
+      Serial.println(OCR1A);
+      delay(40);
+    }
   }
 }
 
 void Land(int AltMes) {
 
-  LandFlag = true;
   if (AltMes > Gnd) {
-    for (float i = GetAltitude(); i > Gnd; i = i - .1) {
-      Elevation(GetAltitude(), round(i));
-      //AutoLevel(0);
-      Serial.println("Landing Loop");
-      Serial.print("OCR1A = ");
-      Serial.println(OCR1A);
-      //    if (AltMes <= Gnd) {
-      //      OCR1A = 62;
-      //    }
+    for (float i = AltMes; i > Gnd; i = i - .1) {
+      // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
+      if (GetAltitude() > (AltSt + 20)) {
+        OCR1A = 62;
+        break;
+      }
+      else {
+        Elevation(AltMes, round(i));
+        AutoLevel(0);
+        Serial.println("Landing Loop");
+        Serial.print("OCR1A = ");
+        Serial.println(OCR1A);
+      }
     }
   }
   else {
@@ -424,6 +437,12 @@ void AutoLevel(int alpha) {
 
   if (ReadRoll() && ReadPitch() < 35) {
     Roll(R, alpha);
+    Serial.println("Roll: \tYaw: \tPitch: ");
+    Serial.print(R);
+    Serial.print("\t");
+    Serial.print(Y);
+    Serial.print("\t");
+    Serial.println(P);
     Serial.print("Roll: ");
     Serial.println(OCR4A);
     Yaw(Y, alpha);
@@ -432,11 +451,9 @@ void AutoLevel(int alpha) {
     Pitch(P, alpha);
     Serial.print("Pitch: ");
     Serial.println(OCR5B);
-    read_gyro('s');
   }
   else if ((ReadRoll() && ReadPitch() >= 35) && (ReadRoll() && ReadPitch() < 360)) {
-    OCR4A = 62;
-    OCR5B = 62;
+    OCR1A = 62;
   }
 }
 
