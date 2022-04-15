@@ -1,4 +1,4 @@
-//DRONECODE
+
 #include <Wire.h>
 #include <LIDARLite.h>
 #include <Servo.h>
@@ -18,7 +18,7 @@ Servo panServo;
 #define ThrotPin 11               //Throttle pin definition controlled by OCR1A = PB5
 #define RollPin 6                 //Roll pin definition controlled by OCR4A = PH3
 #define YawPin 5                  //Yaw pin definition controlled by OCR3A = PE3
-#define PitPin 46                 //Pitch pin definition controlled by OCR5A = PL3
+#define PitPin 45                 //Pitch pin definition controlled by OCR5B = PL4
 #define echoPin 22 // attach pin D2 Arduino to pin Echo of HC-SR04
 #define trigPin 23 //attach pin D3 Arduino to pin Trig of HC-SR04
 
@@ -98,8 +98,9 @@ void setup() {
     Clock 3 is being used for Throttle which is represented by the numbers in each register
     3A, 4A, 5A represent Yaw, Roll, Pitch RESPECTIVELY
   */
-  OCR3A = OCR4A =  OCR5A = 94; //PWM duty cycle of 8.33% for neutral position
-
+  OCR3A = OCR4A =  OCR5B = 94; //PWM duty cycle of 8.33% for neutral position
+  
+  
   initialize_MPU();
   //  Gnd = GetAltitude();
   //  Serial.print("Gnd:  ");
@@ -130,8 +131,10 @@ void setup() {
 // ===               Main Loop                          ===
 // ================================================================
 void loop() {
+  
+  
 
-  //  read_gyro('s');
+  read_gyro('s');
 
   //AutoLevel();
 
@@ -243,14 +246,14 @@ void MotorTest() {
   for (int i = 62; i < 70; i++) {
     OCR1A = i;
     /*
-      Serial.println("OCR1A,OCR3A, OCR4A, OCR5A: ");
+      Serial.println("OCR1A,OCR3A, OCR4A, OCR5B: ");
       Serial.print(OCR1A);
       Serial.print(",  ");
       Serial.print(OCR3A);
       Serial.print(",  ");
       Serial.print(OCR4A);
       Serial.print(",  ");
-      Serial.println(OCR5A);
+      Serial.println(OCR5B);
       delay(10);
       /
       delay(10);
@@ -258,14 +261,14 @@ void MotorTest() {
       for (int i = 95; i > 62; i--) {
       OCR1A = i;
       /
-      Serial.println("OCR1A,OCR3A, OCR4A, OCR5A: ");
+      Serial.println("OCR1A,OCR3A, OCR4A, OCR5B: ");
       Serial.print(OCR1A);
       Serial.print(",  ");
       Serial.print(OCR3A);
       Serial.print(",  ");
       Serial.print(OCR4A);
       Serial.print(",  ");
-      Serial.println(OCR5A);
+      Serial.println(OCR5B);
       delay(10);
     */
     delay(100);
@@ -345,7 +348,11 @@ void Yaw(int YawMes, int YawReq) {
 
 void Pitch(float PitMes, int PitReq) {
   int OcrNum = adj(PitMes, PitReq) / 16;
-  OCR5A = OcrNum;
+  if (OcrNum < 125 && OcrNum > 62) {
+    OCR5B = OcrNum;
+
+  }
+  
 }
 
 /*
@@ -414,20 +421,23 @@ float read_gyro(char yprangle) {
 // ===               AutoLevel      (IN PROGRESS)         ===
 // ================================================================
 void AutoLevel(int alpha) {
-  if (OCR4A < 125 && OCR3A && OCR5A) {
 
+  if (ReadRoll() && ReadPitch() < 35) {
+    Roll(R, alpha);
+    Serial.print("Roll: ");
+    Serial.println(OCR4A);
+    Yaw(Y, alpha);
+    Serial.print("Yaw: ");
+    Serial.println(OCR3A);
+    Pitch(P, alpha);
+    Serial.print("Pitch: ");
+    Serial.println(OCR5B);
+    read_gyro('s');
   }
-  Roll(R, alpha);
-  Serial.print("Roll: ");
-  Serial.println(OCR4A);
-  Yaw(Y, alpha);
-  Serial.print("Yaw: ");
-  Serial.println(OCR3A);
-  Pitch(P, alpha);
-  Serial.print("Pitch: ");
-  Serial.println(OCR5A);
-  read_gyro('s');
-
+  else if ((ReadRoll() && ReadPitch() >= 35) && (ReadRoll() && ReadPitch() < 360)) {
+    OCR4A = 62;
+    OCR5B = 62;
+  }
 }
 
 
