@@ -162,9 +162,9 @@ void Launch() {
     }
   }
   //Gradual increase of altitude to rise to designated level
-  for (float i = GetAltitude(); i <= AltSt; i = i + .1) {
+  for (float i = GetAltitude(); i <= AltSt; i = i + .3) {
     // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
-    if (GetAltitude() > (AltSt + 20)) {
+    if (GetAltitude() > (100)) {    // the value being compared to GetAltitude must be a constant
       OCR1A = 62;
       Serial.print("OCR1A = ");
       Serial.println(OCR1A);
@@ -186,24 +186,31 @@ void Launch() {
 void Land(int AltMes) {
 
   if (AltMes > Gnd) {
+
     for (float i = AltMes; i > Gnd; i = i - .1) {
       // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
-      if (GetAltitude() > (AltSt + 20)) {
+      if (GetAltitude() > (100)) {  // the value being compared to GetAltitude must be a constant
         OCR1A = 62;
+        Serial.print("OCR1A = ");
+        Serial.println(OCR1A);
         break;
       }
       else {
         Elevation(AltMes, round(i));
         AutoLevel(0);
         Serial.println("Landing Loop");
+        Serial.print("i = ");
+        Serial.println(i);
         Serial.print("OCR1A = ");
         Serial.println(OCR1A);
       }
     }
   }
+
+
   else {
     OCR1A = 62;
-    Serial.print("Off");
+    Serial.println("Off");
   }
 }
 
@@ -213,32 +220,24 @@ void Land(int AltMes) {
 */
 
 int Elevation(int AltMes, int AltReq) {
-
   if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {// && LaunchFlag == false && LandFlag == false
     if (AltMes < (AltReq - 2)) {
       OCR1A++;
       Serial.print("Distance = ");
-      Serial.print(GetAltitude());
+      Serial.println(GetAltitude());
       Serial.println("OCR1A rising");
     }
     else if (AltMes > (AltReq + 2)) {
       OCR1A--;
       Serial.print("Distance = ");
-      Serial.print(GetAltitude());
+      Serial.println(GetAltitude());
       Serial.println("OCR1A falling");
     }
-    //    else if (AltMes <= Gnd) {
-    //
-    //      OCR1A = 62;
-    //    }
-    //    else {
-    //      OCR1A = 90;
-    //    }
   }
-  if ((OCR1A <= 85 || OCR1A >= 105 ) && AltMes > Gnd) {
-    OCR1A = 86;
-  }
-  else if (OCR1A <= 85 && LandFlag == false && LaunchFlag == false) {
+  //  if ((OCR1A <= 85 || OCR1A >= 105 ) && AltMes > Gnd) {
+  //    OCR1A = 86;
+  //  }
+  else if (OCR1A <= 85 && AltMes > Gnd) {
     OCR1A++;
     Serial.println("rising");
     Serial.print("Distance = ");
@@ -246,6 +245,22 @@ int Elevation(int AltMes, int AltReq) {
     Serial.print("OCR1A = ");
     Serial.println(OCR1A);
   }
+  else if (OCR1A >= 105 && AltMes > Gnd) {
+    OCR1A--;
+    Serial.println("falling");
+    Serial.print("Distance = ");
+    Serial.print(GetAltitude());
+    Serial.print("OCR1A = ");
+    Serial.println(OCR1A);
+  }
+  //  else if (OCR1A <= 85 && LandFlag == false && LaunchFlag == false) {
+  //    OCR1A++;
+  //    Serial.println("rising");
+  //    Serial.print("Distance = ");
+  //    Serial.print(GetAltitude());
+  //    Serial.print("OCR1A = ");
+  //    Serial.println(OCR1A);
+  //  }
 
   else if (LandFlag == true && AltMes <= Gnd) {
     OCR1A = 62;
