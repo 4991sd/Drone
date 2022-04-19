@@ -1,5 +1,5 @@
-#define Rxd 25
-#define Txd 33
+#define Rxd 25  // pin RX on arduino
+#define Txd 33  //pin tx on arduino
 
 #include "BluetoothSerial.h"
 
