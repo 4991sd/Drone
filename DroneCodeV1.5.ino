@@ -5,6 +5,8 @@
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
+
+
 MPU6050 mpu;
 LIDARLite lidarStuff;
 Servo panServo;
@@ -35,6 +37,8 @@ bool LaunchFlag;
 float Y;
 float R;
 float P;
+const int BUFFER_SIZE = 100;
+char buf[BUFFER_SIZE];
 
 // ================================================================
 // ===               MPU control/status vars               ===
@@ -76,6 +80,7 @@ void setup() {
   pinMode(buzzerPin, OUTPUT); // Set buzzer - pin 8 as an output
   panServo.attach(servoPin); // We need to attach the servo to the used pin number
   lidarStuff.configure(0); // default mode, balanced performance.
+  Serial1.begin(19200);
 
 
   //Clock 1 is being used for Yaw which is represented by the numbers in each register
@@ -115,14 +120,9 @@ void setup() {
   Serial.println("---------------------Launch Started---------------------");
   LandFlag = false;
   LaunchFlag = true;
-  Launch();
-  LaunchFlag = false;
-  Serial.println("---------------------Launch Ended---------------------");
-  LandFlag = true;
-  Serial.println("---------------------Land Started---------------------");
-  Land(GetAltitude());
-  Serial.println("---------------------Land Ended---------------------");
-  //AltSt = Altitude at Start. 7ft = 213cm
+
+
+  
 }
 
 
@@ -132,7 +132,12 @@ void setup() {
 // ===               Main Loop                          ===
 // ================================================================
 void loop() {
+
+
   
+  Bluetooth();
+
+   
   
 
   read_gyro('s');
@@ -144,6 +149,46 @@ void loop() {
   AutoLevel(0);
 
 }
+
+String Bluetooth(){
+
+  String Command = "";
+
+    int rlen = Serial1.readBytesUntil('\n',buf,BUFFER_SIZE);
+    for(int i = 0; i < rlen; i++){
+      if (buf[i] == '\r'){
+       break;
+    }
+          Command.concat(buf[i]);
+
+}
+Serial.print(Command);
+Serial.write('\n');
+
+  if(Bluetooth == "launch"){
+  Launch();
+  
+  LaunchFlag = false;
+  Serial.println("---------------------Launch Ended---------------------");
+  LandFlag = true;
+  Serial.println("---------------------Land Started---------------------");
+  Land(GetAltitude());
+  Serial.println("---------------------Land Ended---------------------");
+  //AltSt = Altitude at Start. 7ft = 213cm
+  }
+
+  else if(Bluetooth == "off"){
+    OCR1A=62;
+    Serial.println("off");
+  }
+
+     
+  Command = "";
+return Command;
+  
+}
+
+
 
 void Launch() {
   Serial.println("Launching");
