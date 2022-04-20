@@ -5,8 +5,6 @@
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
-
-
 MPU6050 mpu;
 LIDARLite lidarStuff;
 Servo panServo;
@@ -37,9 +35,9 @@ bool LaunchFlag;
 float Y;
 float R;
 float P;
+
 const int BUFFER_SIZE = 100;
 char buf[BUFFER_SIZE];
-
 // ================================================================
 // ===               MPU control/status vars               ===
 // ================================================================
@@ -80,8 +78,7 @@ void setup() {
   pinMode(buzzerPin, OUTPUT); // Set buzzer - pin 8 as an output
   panServo.attach(servoPin); // We need to attach the servo to the used pin number
   lidarStuff.configure(0); // default mode, balanced performance.
-  Serial1.begin(19200);
-
+  Serial2.begin(19200);
 
   //Clock 1 is being used for Yaw which is represented by the numbers in each register
   //  Timer Counter Control Register sets the modes for PWM and clk prescaler
@@ -104,8 +101,8 @@ void setup() {
     3A, 4A, 5A represent Yaw, Roll, Pitch RESPECTIVELY
   */
   OCR3A = OCR4A =  OCR5B = 94; //PWM duty cycle of 8.33% for neutral position
-  
-  
+
+
   initialize_MPU();
   Gnd = GetAltitude();
   Serial.print("Gnd:  ");
@@ -120,54 +117,7 @@ void setup() {
   Serial.println("---------------------Launch Started---------------------");
   LandFlag = false;
   LaunchFlag = true;
-
-
-  
-}
-
-
-
-
-// ================================================================
-// ===               Main Loop                          ===
-// ================================================================
-void loop() {
-
-
-  
-  Bluetooth();
-
-   
-  
-
-  read_gyro('s');
-
-  //AutoLevel();
-
-  // MotorTest();
-
-  AutoLevel(0);
-
-}
-
-String Bluetooth(){
-
-  String Command = "";
-
-    int rlen = Serial1.readBytesUntil('\n',buf,BUFFER_SIZE);
-    for(int i = 0; i < rlen; i++){
-      if (buf[i] == '\r'){
-       break;
-    }
-          Command.concat(buf[i]);
-
-}
-Serial.print(Command);
-Serial.write('\n');
-
-  if(Bluetooth == "launch"){
   Launch();
-  
   LaunchFlag = false;
   Serial.println("---------------------Launch Ended---------------------");
   LandFlag = true;
@@ -175,19 +125,25 @@ Serial.write('\n');
   Land(GetAltitude());
   Serial.println("---------------------Land Ended---------------------");
   //AltSt = Altitude at Start. 7ft = 213cm
-  }
-
-  else if(Bluetooth == "off"){
-    OCR1A=62;
-    Serial.println("off");
-  }
-
-     
-  Command = "";
-return Command;
-  
 }
 
+void loop() {
+
+}
+
+String Bluetooth() {
+
+  String Command = "";
+
+  int rlen = Serial2.readBytesUntil('\n', buf, BUFFER_SIZE);
+  for (int i = 0; i < rlen; i++) {
+    if (buf[i] == '\r') {
+      break;
+    }
+    Command.concat(buf[i]);
+
+  }
+}
 
 
 void Launch() {
@@ -208,11 +164,15 @@ void Launch() {
   }
   //Gradual increase of altitude to rise to designated level
   for (float i = GetAltitude(); i <= AltSt; i = i + .3) {
+    Serial.print("Bluetooth");
+    Bluetooth();
     // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
-    if (GetAltitude() > (100)) {    // the value being compared to GetAltitude must be a constant
+    if ((GetAltitude() > (100) || (Bluetooth == "OFF")) ) { // the value being compared to GetAltitude must be a constant
       OCR1A = 62;
       Serial.print("OCR1A = ");
       Serial.println(OCR1A);
+      Serial2.print("OCR1A = ");
+      Serial2.println(OCR1A);
       break;
     }
     else {
@@ -233,8 +193,9 @@ void Land(int AltMes) {
   if (AltMes > Gnd) {
 
     for (float i = AltMes; i > Gnd; i = i - .1) {
+      Bluetooth();
       // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
-      if (GetAltitude() > (100)) {  // the value being compared to GetAltitude must be a constant
+      if ((GetAltitude() > (100)) || (Bluetooth == "OFF")) { // the value being compared to GetAltitude must be a constant
         OCR1A = 62;
         Serial.print("OCR1A = ");
         Serial.println(OCR1A);
@@ -265,6 +226,7 @@ void Land(int AltMes) {
 */
 
 int Elevation(int AltMes, int AltReq) {
+  Bluetooth();
   if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {// && LaunchFlag == false && LandFlag == false
     if (AltMes < (AltReq - 2)) {
       OCR1A++;
@@ -307,13 +269,14 @@ int Elevation(int AltMes, int AltReq) {
   //    Serial.println(OCR1A);
   //  }
 
-  else if (LandFlag == true && AltMes <= Gnd) {
+  else if ((LandFlag == true && AltMes <= Gnd) || (Bluetooth == "OFF")) {
     OCR1A = 62;
     Serial.print("OCR1A = ");
     Serial.println(OCR1A);
     Serial.println("Off");
   }
 }
+
 
 void MotorTest() {
   for (int i = 62; i < 70; i++) {
@@ -399,8 +362,6 @@ int FlightMode() {
   OCR3A = 125;
   delay(2000);
   OCR3A = 95;
-
-
 }
 
 /*
@@ -425,7 +386,7 @@ void Pitch(float PitMes, int PitReq) {
     OCR5B = OcrNum;
 
   }
-  
+
 }
 
 /*
@@ -503,17 +464,20 @@ void AutoLevel(int alpha) {
     Serial.print(Y);
     Serial.print("\t");
     Serial.println(P);
-    Serial.print("Roll: ");
-    Serial.println(OCR4A);
+    Serial.print("Roll Correction: ");
+    Serial.print(OCR4A);
+    Serial.print("\t");
     Yaw(Y, alpha);
-    Serial.print("Yaw: ");
-    Serial.println(OCR3A);
+    Serial.print("Yaw Correction: ");
+    Serial.print(OCR3A);
+    Serial.print("\t");
     Pitch(P, alpha);
-    Serial.print("Pitch: ");
+    Serial.print("Pitch Correction: ");
     Serial.println(OCR5B);
   }
   else if ((ReadRoll() && ReadPitch() >= 35) && (ReadRoll() && ReadPitch() < 360)) {
     OCR1A = 62;
+    Serial.println("off");
   }
 }
 
