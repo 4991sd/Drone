@@ -35,6 +35,8 @@ bool LaunchFlag;
 float Y;
 float R;
 float P;
+String Command = "";
+int BLT;
 
 const int BUFFER_SIZE = 100;
 char buf[BUFFER_SIZE];
@@ -73,7 +75,7 @@ void setup() {
   pinMode(A0, INPUT);
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
-  Serial.begin(500000); // opens serial port, sets data rate to 9600 bps
+  Serial.begin(19200); // opens serial port, sets data rate to 9600 bps
   lidarStuff.begin(0, true); // default I2C freq to 400 kHz
   pinMode(buzzerPin, OUTPUT); // Set buzzer - pin 8 as an output
   panServo.attach(servoPin); // We need to attach the servo to the used pin number
@@ -131,17 +133,20 @@ void loop() {
 
 }
 
-String Bluetooth() {
-
-  String Command = "";
-
-  int rlen = Serial2.readBytesUntil('\n', buf, BUFFER_SIZE);
-  for (int i = 0; i < rlen; i++) {
-    if (buf[i] == '\r') {
-      break;
-    }
-    Command.concat(buf[i]);
-
+int Bluetooth() {
+  //  Command = "";
+  //  int rlen = Serial2.readBytesUntil('\n', buf, BUFFER_SIZE);
+  int Message = Serial2.read();
+  //  for (int j = 0; j < rlen; j++) {
+  //    Serial.println(j);
+  //
+  //    if (buf[j] == '\r') {
+  //      break;
+  //    }
+  //    Command.concat(buf[j]);
+  //  }
+  if (Message != -1) {
+    return Message;
   }
 }
 
@@ -164,15 +169,15 @@ void Launch() {
   }
   //Gradual increase of altitude to rise to designated level
   for (float i = GetAltitude(); i <= AltSt; i = i + .3) {
-    Serial.print("Bluetooth");
-    Bluetooth();
+    Serial.println("Bluetooth");
     // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
-    if ((GetAltitude() > (100) || (Bluetooth == "OFF")) ) { // the value being compared to GetAltitude must be a constant
+    if ((GetAltitude() > (100) || (Bluetooth() == 10)) ) { // the value being compared to GetAltitude must be a constant
       OCR1A = 62;
       Serial.print("OCR1A = ");
       Serial.println(OCR1A);
       Serial2.print("OCR1A = ");
       Serial2.println(OCR1A);
+      BLT = 10;
       break;
     }
     else {
@@ -193,12 +198,12 @@ void Land(int AltMes) {
   if (AltMes > Gnd) {
 
     for (float i = AltMes; i > Gnd; i = i - .1) {
-      Bluetooth();
       // The following condition needed to kill the throttle when the altitude measured surpasses the designated altitude
-      if ((GetAltitude() > (100)) || (Bluetooth == "OFF")) { // the value being compared to GetAltitude must be a constant
+      if ((GetAltitude() > (100)) || (Bluetooth() == 10)) { // the value being compared to GetAltitude must be a constant
         OCR1A = 62;
         Serial.print("OCR1A = ");
         Serial.println(OCR1A);
+        BLT = 10;
         break;
       }
       else {
@@ -226,7 +231,6 @@ void Land(int AltMes) {
 */
 
 int Elevation(int AltMes, int AltReq) {
-  Bluetooth();
   if (OCR1A > 85 && OCR1A < 105 && AltMes > Gnd) {// && LaunchFlag == false && LandFlag == false
     if (AltMes < (AltReq - 2)) {
       OCR1A++;
@@ -269,7 +273,7 @@ int Elevation(int AltMes, int AltReq) {
   //    Serial.println(OCR1A);
   //  }
 
-  else if ((LandFlag == true && AltMes <= Gnd) || (Bluetooth == "OFF")) {
+  else if ((LandFlag == true && AltMes <= Gnd) || BLT == 10) {
     OCR1A = 62;
     Serial.print("OCR1A = ");
     Serial.println(OCR1A);
