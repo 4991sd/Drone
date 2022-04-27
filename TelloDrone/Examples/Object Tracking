@@ -56,7 +56,7 @@ cv2.createTrackbar("Threshold1", "Parameters", 166, 255, empty)
 cv2.createTrackbar("Threshold2", "Parameters", 171, 255, empty)
 cv2.createTrackbar("Area", "Parameters", 1750, 30000, empty)
 
-
+###FUNCTION####
 def stackImages(scale, imgArray):
     rows = len(imgArray)
     cols = len(imgArray[0])
@@ -89,7 +89,7 @@ def stackImages(scale, imgArray):
         ver = hor
     return ver
 
-
+##FUNCTION##
 def getContours(img, imgContour):
     global dir
     contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -141,7 +141,7 @@ def getContours(img, imgContour):
         else:
             dir = 0
 
-
+##FUNCTION##
 def display(img):
     cv2.line(img, (int(frameWidth / 2) - deadZone, 0), (int(frameWidth / 2) - deadZone, frameHeight), (255, 255, 0), 3)
     cv2.line(img, (int(frameWidth / 2) + deadZone, 0), (int(frameWidth / 2) + deadZone, frameHeight), (255, 255, 0), 3)
@@ -150,6 +150,8 @@ def display(img):
     cv2.line(img, (0, int(frameHeight / 2) + deadZone), (frameWidth, int(frameHeight / 2) + deadZone), (255, 255, 0), 3)
 
 
+
+## MAIN LOOP ##
 while True:
 
     # GET THE IMAGE FROM TELLO
