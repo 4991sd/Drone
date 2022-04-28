@@ -1,1 +1,47 @@
+#include <Wire.h>
+#include <LIDARLite.h>
+#include <Servo.h>
+#include "Detect.h"
 
+Detect d = Detect();
+LIDARLite lidarStuff;
+Servo panServo;
+
+#define servoPin 4
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  Serial1.begin(19200);
+
+  lidarStuff.begin(0, true);    // default I2C freq to 400 kHz
+  lidarStuff.configure(0);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+}
+
+int angle = 0;
+
+//Servo and Lidar Combine 
+void DataCollection(){
+    //angle in degrees 
+    for (angle = 0; angle <= 180; angle += 2) {
+        panServo.write(angle); 
+        int range = lidarStuff.distance();
+
+        //Dectection range limited to 2ft to 6ft
+        if(range < 183 && range > 60)
+        {
+          d.CalculateCenter(range, angle);
+        }
+        delay(10);
+        
+    }     
+    for (angle = panServo.read(); angle > 0; angle -= 2) {        
+        panServo.write(angle);
+        delay(100);
+      }    
+}
