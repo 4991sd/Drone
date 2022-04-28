@@ -4,8 +4,8 @@
 #define Rx 25 // connect to Tx1
 
 
-const char* ssid = "Tello";
-const char* password = "3754857706";
+const char* ssid = "NetworkNameHere";
+const char* password = "IPPasswordHere";
 
 void setup() {
   // put your setup code here, to run once:
