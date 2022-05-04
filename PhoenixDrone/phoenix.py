@@ -54,7 +54,7 @@ for alpha in degrees:
         x = distance*math.cos(alpha/180*math.pi)
         y = distance*math.sin(alpha/180*math.pi)
         print("X = %.2f" %x)
-        print("Y = %2.f" %y)
+        print("Y = %.2f" %y)
 
         if alpha >= 0 and alpha <=90:
             alpha1 = alpha + 90
