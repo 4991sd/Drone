@@ -91,7 +91,7 @@ for alpha in degrees:
 x_length = 0
 y_length = 0
 x_center = 0
-y_venter = 0
+y_center = 0
 
 x_length = abs(Xs[-1]) - abs(Xs[0])
 y_length = abs(Ys[-1]) - abs(Ys[0])
