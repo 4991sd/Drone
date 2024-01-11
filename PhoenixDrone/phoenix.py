@@ -34,8 +34,7 @@ else:
 degrees = range(-90,90,1)
 
 i = 0
-#I hope this works i swear to god :) 
-#Creat4es a 180 sweep
+#Creates a 180 sweep
 
 for alpha in degrees:
     servo.angle = alpha
